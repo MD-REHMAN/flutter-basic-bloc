@@ -1,0 +1,28 @@
+`Flutter Rendering of widget explained`
+- Flutter at its core maintains 3 Trees (namely `Widget Tree`, `Element Tree` and `Rendered Object Tree`).
+- Where `Widget Tree` is the one we create. and based on widget tree nodes on `Element Tree` is created.
+- Each Element of Element Tree holds refs of the Widget which created it.
+- And also each Element create Render Object and also keep its refs. (refs are shown by green dashed line in diagram).
+
+
+- Since widgets are Immutable, every time data is changed. New Widget is created rather than updating its current state.
+- Where as the Element update depends of 2 params i.e., `widget.returnType` and `widget.key`.
+- Now the Render Object which is responsible for drawing, is mutable. Meaning it is updated instead of getting created over and over.
+  
+
+`But HOW?`
+- I'll take the simple example if out basic flutter app. 
+- Here, the Text Widget hold the value of count and the float button updates it.
+- I have created a diagram to show what happing and and I have removed some of the Widget from the example to make it simple to understand.
+- When count is updated by the button, it increases the counter and make itself dirty.
+- Since Element is dirty, it calls the build function of the Corresponding widget (i.e., MyHomePage).
+- New MyHomePage is created and now it's compared wit it's old instance (returnType and key). In this case it's same so the Element start referencing to the new Widget.
+- Since Parent is build, this trigger the chain making all the child widgets to go through the same process.
+- As Text Widget is one of the child that shows the count, new Widget is created ( becz widget are immutable ).
+- One thing to keep note is that Render Object isn't changed at all, it's only updated (which provide performance benefits as creating is more costly that update)
+
+`But WHEN render Object is created?`
+- Render objects are created when new Element is created in the tree.
+- And when how new elements are created?
+  - Either in the Beginning or while updating Element gets (different returnType or key).
+

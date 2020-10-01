@@ -1,0 +1,164 @@
+`What is BLoC Pattern`
+[stole the definition from raywenderlich's article on BLoC]
+BLoC stands for Business Logic Components. The gist of BLoC is that everything in the app should be represented as stream of events: widgets submit events; other widgets will respond. BLoC sits in the middle, managing the conversation.
+
+`WHY?`
+- Basically to separate UI and Logic
+- make state changes predictable
+- allow state change only via one way though the app.
+
+`Core concepts`
+BLoC heavily relays on `Streams` & `StreamSink`. Now in a nut shell Streams is -
+```A stream is a sequence of asynchronous data.```
+- Now we use Stream to get asynchronous stream of data.
+- Whereas we use StreamSink to set data. Both of stream behaves like getter and setter.
+
+
+`Implementation`
+- It can be Implemented by Default Streams provided by Dart, or we can also use package like `bloc` & `flutter_bloc` (still going through them).
+- I'll split the Implementation into 3 parts:
+ - Data / Model
+ - Logic / BLoC
+ - UI / Presentation
+
+  `- Data / Model`
+  ```
+  class Employee {
+    int _id;
+    String _name;
+    double _salary;
+
+    Employee(this._id, this._name, this._salary);
+
+    // Getter
+    int get id => this._id;
+    String get name => this._name;
+    double get salary => this._salary;
+
+    // Setters
+    set id(int id) {
+      this._id = id;
+    }
+    set name(String name) {
+      this._name = name;
+    }
+    set salary(double salary) {
+      this._salary = salary;
+    }
+  }
+  ```
+  - The above is simple example of Model with basic setter and getters for the data.
+
+  `- Logic / BLoC`
+  - This is the main part for Implementing BLoC pattern. So It'll have lot of code but I have subdivided it it 7 steps,
+  ```
+  // #1 TODO: imports
+  import 'dart:async';
+  import 'Employee.dart';
+
+  class EmployeeBloc {
+  // #2 TODO: List of employees
+    List<Employee> _employeeList = [
+      Employee(1, 'Employee 1', 10000),
+      Employee(2, 'Employee 2', 20000),
+      Employee(3, 'Employee 3', 30000),
+      Employee(4, 'Employee 4', 40000),
+      Employee(5, 'Employee 5', 50000),
+    ];
+
+  // #3 TODO: Stream Controllers
+    final _employeeListSteamController = StreamController<List<Employee>>();
+
+    // for inc and dec
+    final _employeeSalaryIncrementSteamController = StreamController<Employee>();
+    final _employeeSalaryDecrementSteamController = StreamController<Employee>();
+
+  // #4 TODO: Stream Sink getter
+    Stream<List<Employee>> get employeeListStream =>
+        _employeeListSteamController.stream;
+
+    StreamSink<List<Employee>> get employeeListSink =>
+        _employeeListSteamController.sink;
+    StreamSink<Employee> get employeeSalaryIncrement =>
+        _employeeSalaryIncrementSteamController.sink;
+    StreamSink<Employee> get employeeSalaryDecrement =>
+        _employeeSalaryDecrementSteamController.sink;
+
+  // #5 TODO: Constructor - add data; listen to change
+    EmployeeBloc() {
+      _employeeListSteamController.add(_employeeList);
+
+      _employeeSalaryIncrementSteamController.stream.listen(_incrementSalary);
+      _employeeSalaryDecrementSteamController.stream.listen(_decrementSalary);
+    }
+
+  // #6 TODO: Core Functions
+    _incrementSalary(Employee employee) {
+      double salary = employee.salary;
+      double incrementedSalary = salary * .2;
+
+      _employeeList[employee.id - 1].salary = salary + incrementedSalary;
+      employeeListSink.add(_employeeList);
+    }
+
+    _decrementSalary(Employee employee) {
+      double salary = employee.salary;
+      double decrementedSalary = salary * .2;
+
+      _employeeList[employee.id - 1].salary = salary - decrementedSalary;
+      employeeListSink.add(_employeeList);
+    }
+
+  // #7 TODO: dispose
+    void dispose() {
+      _employeeListSteamController.close();
+      _employeeSalaryIncrementSteamController.close();
+      _employeeSalaryDecrementSteamController.close();
+    }
+  }
+  ```
+  `- #1 TODO: imports`
+    - we need to import `dart:async` because this package will provide Stream, StreamSink and StreamController and more such class.
+
+
+  `- #2 TODO: List of employees`
+    - Here we declare data object and also provide Initial value. In the example I'm setting it manually but we can also fetch for database.
+
+  `- #3 TODO: Stream Controllers & #7 TODO: dispose`
+    - In the #3 Step we create the StreamController and on #7 Step we're closing the stream.
+
+  `- #4 TODO: Stream Sink getter`
+    - Now this is the step we'll use the StreamController created in #3 Step and make getters, which we'll Eventually use in UI / Presentation.
+    - StreamController.stream - is used to get data whereas StreamController.sink - is used to send data.
+
+  `- #5 TODO: Constructor - add data; listen to change`
+    - This step is obvious, we Simply add init data and set listeners on the stream.
+    - And whatever function is passed to the listen method, that method should be responsible changing the data. In our case they are `_incrementSalary` & `_decrementSalary`. which will be declared in #6 Step. And these function are called whenever the stream gets new data.
+    - NOTE: it's not Necessary to set data in the Constructor but I'm doing this in this example.
+
+  `- #6 TODO: Core Functions`
+    - The much have in core function is `employeeListSink.add(_employeeList)` to push the change made by the function to the _employeeList.
+
+  `- UI / Presentation`
+  - Simply create an instance of you BLoC class created in prev. step
+  ```
+  final EmployeeBloc _employeeBloc = EmployeeBloc();
+  ```
+  - And use the Stream or Sink the get or set the data. 
+  - NOTE: StreamBuilder widget should used to access steams in the UI
+  ```
+  _employeeBloc.employeeListStream
+  ```
+  or
+  ```
+  _employeeBloc.employeeSalaryIncrement.add(snapshot.data[index]);
+  ```
+  or
+  ```
+  _employeeBloc.employeeSalaryDecrement.add(snapshot.data[index]);
+  ```
+  - here snapshot represents the Snapshot of res given by `_employeeBloc.employeeListStream`.
+
+`Advantages over package:provider`
+- Data is immutable.
+- Provides more scalability.

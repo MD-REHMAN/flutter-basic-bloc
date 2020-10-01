@@ -1,0 +1,20 @@
+`Futures`
+- In many ways Futures in Dart are analogous to Promises in JS. And just like Promises, it have `then` method to get the value.
+- It is used to return data Asynchronously.
+- Futures can have 3 states:
+  - Uncompleted
+  - Completed by a value - handled by `then` method
+  - Completed by an error - handled by `catchError` method
+- Futures also have `whenComplete` method which analogous to finally in a try catch statement.
+
+
+`FutureBuilder widget`
+- It takes Future and Builder method. and Builder the widget when the Future Completes.
+- The Builder method provides Snapshot, which can have 3 states: Uncompleted, Completed by a value and Completed by a error
+- And it can show diffrent widgets as per the state.
+
+`Streams`
+- Just like Future, Streams also return Asynchronously. but not just a single value instead stream of value.
+- It also have `StreamBuilder widget` to automatically update the view Stream get new value.
+
+--- I'll add more to this tomorrow ---

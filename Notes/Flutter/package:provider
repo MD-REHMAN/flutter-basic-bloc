@@ -1,0 +1,54 @@
+`package:provider`
+- At its core it uses Inherited widget, to make the data Accessible down the tree.
+- In addition to that it also provide (copied below 4 points from docs):
+  - simplified allocation/disposal of resources
+  - lazy-loading
+  - a largely reduced boilerplate over making a new class every time
+  - devtools friendly
+
+
+`Creation`
+- package:provider provides widget like Provider, MultiProvider and many more for different use cases.
+- In the below code I'm using MultiProvider to provide Auth and User data to the child (i.e., MyApp).
+```
+MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => Auth()),
+        ChangeNotifierProvider(create: (_) => User()),
+      ],
+      child: MyApp(),
+    ),
+```
+- both classes should have getters and setters to access and update data.
+- And also they should also extend `ChangeNotifier`.
+- And updateMethod should call `notifyListeners()` to update all the instances of the data.
+- Below example is very simple but can be replace by more complex data.
+```
+class User extends ChangeNotifier {
+  var _name = 'rehman';
+  get name => _name;
+
+  void setName(name) {
+    this._name = name;
+    notifyListeners();
+  }
+}
+```
+- Accessing the data can also be done in multiple ways
+  - by using read, watch and select.
+  - by using Provider.of
+  - using Consumer & Selector (still exploring them)
+
+
+`Working`
+- 
+
+`Comparison with React`
+- Its Analogues to context api in react.
+- Both provide wrapper which make the data Available down the tree.
+- Only the child nodes can access and update the data.
+- Update in the data, make the rerender (internal working is different).
+
+
+
+
